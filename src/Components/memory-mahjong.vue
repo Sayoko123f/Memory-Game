@@ -3,12 +3,25 @@
     <div class="bg-gray-500 p-4 md:px-20 xl:px-24">
       <div class="flex flex-wrap justify-center gap-1.5">
         <div
-          class="select-none bg-opacity-80"
+          class="select-none bg-opacity-80 relative"
           :class="calcDivClass(item)"
           v-for="(item, i) in cards"
           :key="i"
-          @click="selecting(item)"
+          @click.stop="selecting(item)"
         >
+          <div
+            v-if="showAnswerMask"
+            class="
+              absolute
+              top-0
+              left-0
+              h-sm
+              w-sm
+              md:w-md
+              md:h-md
+              bg-opacity-100 bg-black
+            "
+          ></div>
           <img
             class="h-sm w-sm md:w-md md:h-md"
             :src="item.src"
@@ -19,15 +32,21 @@
       </div>
     </div>
     <!-- Prompt Message -->
-    <div class="mt-2 p-4 bg-gray-900 text-white rounded">
+    <div
+      class="mt-2 p-4 bg-gray-900 text-white rounded"
+      @click.once="gameStart"
+    >
       <p class="font-bold text-xl">{{ _userPrompt }}</p>
     </div>
+    <!-- Game End show score -->
+    <div class="p-4 bg-gray-900 text-white rounded" v-if="playerStatus===3"></div>
     <!-- Debug Message -->
     <div class="mt-6 p-4 bg-gray-900 text-white rounded" @click="log">
       <p class="font-bold text-xl">------Debug------</p>
       <p class="font-bold">playerStatus: {{ playerStatus }}</p>
       <p class="font-bold">timerSecond: {{ timerSecond }}</p>
       <p class="font-bold">score: {{ score }}</p>
+      <p class="font-bold">userSelectCount: {{ userSelectCount }}</p>
       <!-- <p class="font-bold">prevClickCard: {{ prevClickCard }}</p> -->
       <p class="font-bold">config: {{ config }}</p>
     </div>
@@ -52,6 +71,7 @@ export default {
       difficult: Number,
       showAnswerDuration: Number,
       showPerCardDuration: Number,
+      countdownSecond: Number,
       /**
        * 1: Countdown.
        * 2: Time race.
@@ -76,6 +96,9 @@ export default {
     timer: null,
     timerSecond: 0,
     _userPrompt: "",
+    getCardBackSrc: "source/70.png",
+    userSelectCount: 0,
+    showAnswerMask: true,
   }),
   computed: {
     diflen() {
@@ -96,9 +119,6 @@ export default {
           return 10;
       }
     },
-    getCardBackSrc() {
-      return "source/70.png";
-    },
     score() {
       return this.cards.filter((e) => e.status === this.matched).length / 2;
     },
@@ -109,6 +129,8 @@ export default {
       this.cards = [];
       this.playerStatus = 0;
       this.prevClickCard = null;
+      this.userSelectCount = 0;
+      this.showAnswerMask = true;
       let kinds = this.getRandomKinds(this.diflen);
       kinds = kinds.concat(kinds.slice(0));
       this.cards = kinds
@@ -123,7 +145,14 @@ export default {
           obj.status = this.showing;
           return obj;
         });
+      this.userPrompt("點擊此處開始遊戲");
+    },
+    gameStart() {
+      if (!this.showAnswerMask) {
+        return;
+      }
       // Show answer
+      this.showAnswerMask = false;
       this.userPrompt("顯示答案中");
       this.wait(this.config.showAnswerDuration)
         .then(() => {
@@ -140,7 +169,7 @@ export default {
           // Game mode 1
           if (this.config.gameMode === 1) {
             // Start countdown.
-            this.countdown(6);
+            this.countdown(this.config.countdownSecond);
             return;
           }
 
@@ -176,6 +205,7 @@ export default {
       }
       this.setCardStatus(this.showing, card.index);
       this.setCardStatus(this.selected, card.index);
+      this.userSelectCount++;
       switch (this.playerStatus) {
         default:
           throw new Error("Unexpected playerStatus");

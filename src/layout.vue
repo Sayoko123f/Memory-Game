@@ -2,31 +2,38 @@
   <div class="">
     <div class="">
       <h1>Memory Game</h1>
-      <select
-        class="outline-none p-1 border focus:border-blue-400 border-black"
-        v-model="cf.difficult"
-      >
-        <option :value="1">Very Very Easy</option>
-        <option :value="2">Very Easy</option>
-        <option :value="3">Easy</option>
-        <option :value="4">Normal</option>
-        <option :value="5">Hard</option>
-        <option :value="6">Nightmare</option>
-      </select>
-      <button
-        :class="[btnBaseClass, showGame ? 'text-gray-500' : 'text-white']"
-        @click="newGame"
-        :disabled="showGame"
-      >
-        New Game
-      </button>
-      <button
-        :class="[btnBaseClass, showGame ? 'text-white' : 'text-gray-500']"
-        @click="delGame"
-        :disabled="!showGame"
-      >
-        Destory Game
-      </button>
+      <div class="">
+        <h3>請選擇難度</h3>
+        <button
+          :class="[
+            btnBaseClass,
+            cf.difficult === i + 1 ? ['bg-blue-600', 'text-white'] : 'bg-white',
+          ]"
+          v-for="(level, i) in levels"
+          :key="i"
+          @click.stop="setDifficult(i + 1)"
+        >
+          {{ level }}
+        </button>
+      </div>
+      <div class="">
+        <button
+          class="bg-black"
+          :class="[btnBaseClass, showGame ? 'text-gray-500' : 'text-white']"
+          @click="newGame"
+          :disabled="showGame"
+        >
+          New Game
+        </button>
+        <button
+          class="bg-black"
+          :class="[btnBaseClass, showGame ? 'text-white' : 'text-gray-500']"
+          @click="delGame"
+          :disabled="!showGame"
+        >
+          Destory Game
+        </button>
+      </div>
     </div>
     <div class="mt-4" v-if="showGame">
       <game :config="cf"></game>
@@ -38,33 +45,28 @@
 import game from "./Components/memory-mahjong.vue";
 export default {
   mounted() {
-    this.newGame();
+    // this.newGame();
   },
   components: { game },
   data: () => ({
     cf: {
       difficult: 4,
       showAnswerDuration: 1800,
-      showPerCardDuration: 1700,
-      gameMode: 2,
+      showPerCardDuration: 1500,
+      gameMode: 1,
+      countdownSecond: 10,
     },
     showGame: false,
-    btnBaseClass: [
-      "rounded",
-      "px-2",
-      "py-1",
-      "font-bold",
-      "hover:shadow-md",
-      "bg-black",
-    ],
+    btnBaseClass: ["rounded", "px-2", "py-1", "font-bold", "hover:shadow-md"],
+    levels: ["簡單", "普通", "進階", "星爆"],
   }),
   methods: {
     newGame() {
       // Check Config argv
-      this.cf.difficult = parseInt(this.cf.difficult);
       this.cf.gameMode = parseInt(this.cf.gameMode);
       this.cf.showAnswerDuration = parseInt(this.cf.showAnswerDuration);
       this.cf.showPerCardDuration = parseInt(this.cf.showPerCardDuration);
+      this.cf.countdownSecond = parseInt(this.cf.countdownSecond);
       if (!this.cf.showAnswerDuration || this.cf.showAnswerDuration <= 0) {
         return;
       }
@@ -83,6 +85,9 @@ export default {
     },
     delGame() {
       this.showGame = false;
+    },
+    setDifficult(level) {
+      this.cf.difficult = level;
     },
   },
 };
