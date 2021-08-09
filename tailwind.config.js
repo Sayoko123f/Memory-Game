@@ -1,10 +1,10 @@
 module.exports = {
   purge: {
-    enabled: false,
+    enabled: true,
     content: [
-      './src/memory/Components/*.vue',
-      './src/memory/*.vue',
-      './src/memory/*.html',
+      './src/Components/*.vue',
+      './src/*.vue',
+      './src/*.html',
     ]
   }
   ,
@@ -18,17 +18,13 @@ module.exports = {
         'gofun': '#FFFFFB',
         'ginnezumi': '#91989F',
       },
-      width: {
-        sm: '36px',
-        md: '54px'
-      },
-      height: {
-        sm: '48px',
-        md: '72px',
-      }
+
     },
   },
   variants: {
+    borderWidth: ['hover'],
+    ringWidth: ['hover'],
+    ringColor: ['hover']
   },
   plugins: [],
 }
